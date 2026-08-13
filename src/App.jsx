@@ -18,7 +18,21 @@ const createMarkerIcon = (color) => {
 };
 
 export default function App() {
-  const [mapView, setMapView] = useState('mockup');
+  const [activePage, setActivePage] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const menuItems = [
+    { id: 'dashboard', label: '🏠 Executive Dashboard', icon: '🏠' },
+    { id: 'gis', label: '🗺 GIS Monitoring', icon: '🗺' },
+    { id: 'sites', label: '🐟 Fish Drying Sites', icon: '🐟' },
+    { id: 'cooperatives', label: '👥 Cooperatives', icon: '👥' },
+    { id: 'bmus', label: '⚓ BMUs', icon: '⚓' },
+    { id: 'analytics', label: '📈 Performance Analytics', icon: '📈' },
+    { id: 'inspections', label: '📋 Inspections', icon: '📋' },
+    { id: 'revenue', label: '💰 Revenue Tracking', icon: '💰' },
+    { id: 'reports', label: '📄 Reports', icon: '📄' },
+    { id: 'settings', label: '⚙ Settings', icon: '⚙' },
+  ];
 
   const gisSites = [
     { name: "Usenge BMU", lat: 0.47, lng: 33.96, status: "High Production", color: "#16a34a" },
@@ -28,303 +42,345 @@ export default function App() {
   ];
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        background: "#f8fafc",
-        minHeight: "100vh",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
-        <div>
-          <h1 style={{ color: "#0f172a" }}>
-            Fish-Drying Cooperative Monitoring System
-          </h1>
-          <p style={{ color: "#64748b" }}>
-            County Fisheries Monitoring Dashboard • Siaya County Government
-          </p>
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'Arial, sans-serif' }}>
+      {/* Sidebar Navigation */}
+      <aside style={{
+        width: sidebarOpen ? '280px' : '80px',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        color: 'white',
+        padding: '20px 0',
+        transition: 'width 0.3s ease',
+        position: 'fixed',
+        height: '100vh',
+        overflow: 'auto',
+        zIndex: 1000,
+      }}>
+        <div style={{ padding: '20px', textAlign: 'center', borderBottom: '1px solid rgba(255,255,255,0.2)', marginBottom: '20px' }}>
+          <h2 style={{ fontSize: '1.5em', margin: '0 0 5px 0' }}>🎣</h2>
+          {sidebarOpen && <p style={{ fontSize: '0.85em', margin: '5px 0 0 0' }}>Siaya Fisheries</p>}
         </div>
+
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+          {menuItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActivePage(item.id)}
+              style={{
+                background: activePage === item.id ? 'rgba(255,255,255,0.25)' : 'transparent',
+                color: 'white',
+                border: 'none',
+                padding: '15px 20px',
+                textAlign: 'left',
+                cursor: 'pointer',
+                fontSize: '0.95em',
+                transition: 'all 0.3s ease',
+                borderLeft: activePage === item.id ? '4px solid white' : '4px solid transparent',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+              title={!sidebarOpen ? item.label : ''}
+            >
+              <span style={{ fontSize: '1.2em', minWidth: '25px', textAlign: 'center' }}>{item.icon}</span>
+              {sidebarOpen && <span>{item.label.split(' ').slice(1).join(' ')}</span>}
+            </button>
+          ))}
+        </nav>
 
         <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
           style={{
-            background: "#059669",
-            color: "white",
-            border: "none",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            cursor: "pointer",
+            background: 'rgba(255,255,255,0.1)',
+            color: 'white',
+            border: 'none',
+            padding: '15px',
+            cursor: 'pointer',
+            margin: '20px',
+            borderRadius: '8px',
+            width: 'calc(100% - 40px)',
+            fontSize: '1em',
           }}
         >
-          Export Dashboard
+          {sidebarOpen ? '◀' : '▶'}
         </button>
-      </div>
+      </aside>
 
-      {/* KPI Cards */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
-          gap: "15px",
-          marginBottom: "20px",
-        }}
-      >
-        <Card title="Registered Cooperatives" value="28" color="#2563eb" />
-        <Card title="Active BMUs" value="17" color="#16a34a" />
-        <Card title="Fish Processed" value="12.4 Tons" color="#ea580c" />
-        <Card title="Production Value" value="KES 7.9M" color="#9333ea" />
-      </div>
-
-      {/* GIS Map */}
-      <div
-        style={{
-          background: "white",
-          padding: "20px",
-          borderRadius: "18px",
-          marginBottom: "20px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h2>GIS Monitoring Map</h2>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={() => setMapView('interactive')}
-              style={{
-                padding: '8px 16px',
-                background: mapView === 'interactive' ? '#2563eb' : '#e2e8f0',
-                color: mapView === 'interactive' ? 'white' : '#0f172a',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              Interactive Map
-            </button>
-            <button
-              onClick={() => setMapView('mockup')}
-              style={{
-                padding: '8px 16px',
-                background: mapView === 'mockup' ? '#2563eb' : '#e2e8f0',
-                color: mapView === 'mockup' ? 'white' : '#0f172a',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontWeight: '500',
-              }}
-            >
-              Mockup View
-            </button>
-          </div>
+      {/* Main Content */}
+      <main style={{
+        marginLeft: sidebarOpen ? '280px' : '80px',
+        flex: 1,
+        padding: '30px',
+        transition: 'margin-left 0.3s ease',
+        overflowY: 'auto',
+      }}>
+        {/* Header */}
+        <div style={{ marginBottom: '30px' }}>
+          <h1 style={{ color: '#0f172a', marginBottom: '5px' }}>Siaya Fisheries Monitoring System</h1>
+          <p style={{ color: '#64748b', marginBottom: '0' }}>County Fisheries Monitoring Dashboard • Siaya County Government</p>
         </div>
 
-        {mapView === 'interactive' ? (
-          <div style={{ height: '420px', borderRadius: '16px', overflow: 'hidden', marginTop: '10px' }}>
-            <MapContainer center={[0.35, 34.1]} zoom={8} style={{ height: '100%', width: '100%' }}>
-              <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap contributors'
-              />
-              {gisSites.map((site, index) => (
-                <Marker
-                  key={index}
-                  position={[site.lat, site.lng]}
-                  icon={createMarkerIcon(site.color)}
-                >
-                  <Popup>
-                    <div>
-                      <strong>{site.name}</strong>
-                      <br />
-                      Status: {site.status}
-                      <br />
-                      <small>Coordinates: {site.lat.toFixed(2)}, {site.lng.toFixed(2)}</small>
-                    </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-          </div>
-        ) : (
-          <div
-            style={{
-              height: "420px",
-              position: "relative",
-              borderRadius: "16px",
-              background:
-                "linear-gradient(to bottom right,#bfdbfe,#dcfce7,#a5f3fc)",
-              overflow: "hidden",
-              marginTop: "10px",
-            }}
-          >
-            <div
-              style={{
-                position: "absolute",
-                left: "5%",
-                top: "10%",
-                background: "#bbf7d0",
-                padding: "10px",
-                borderRadius: "8px",
-              }}
-            >
-              Lake Victoria Shoreline
+        {/* Dashboard Page */}
+        {activePage === 'dashboard' && (
+          <div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: '15px', marginBottom: '30px' }}>
+              <Card title="Registered Cooperatives" value="28" color="#2563eb" />
+              <Card title="Active BMUs" value="17" color="#16a34a" />
+              <Card title="Fish Processed" value="12.4 Tons" color="#ea580c" />
+              <Card title="Production Value" value="KES 7.9M" color="#9333ea" />
+              <Card title="Women Beneficiaries" value="1,246" color="#16a34a" />
+              <Card title="Youth Beneficiaries" value="892" color="#2563eb" />
             </div>
 
-            {gisSites.map((site, index) => {
-              const xPositions = ["20%", "38%", "55%", "72%"];
-              const yPositions = ["35%", "52%", "42%", "60%"];
-              return (
-                <div
-                  key={index}
-                  style={{
-                    position: "absolute",
-                    left: xPositions[index],
-                    top: yPositions[index],
-                    transform: "translate(-50%, -50%)",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      background: site.color,
-                      borderRadius: "50%",
-                      border: "3px solid white",
-                    }}
-                  />
-
-                  <div
-                    style={{
-                      background: "white",
-                      padding: "8px",
-                      borderRadius: "8px",
-                      marginTop: "5px",
-                      fontSize: "12px",
-                      minWidth: "120px",
-                    }}
-                  >
-                    <strong>{site.name}</strong>
-                    <br />
-                    {site.status}
-                  </div>
-                </div>
-              );
-            })}
-
-            <div
-              style={{
-                position: "absolute",
-                bottom: "10px",
-                left: "10px",
-                background: "white",
-                padding: "10px",
-                borderRadius: "8px",
-              }}
-            >
-              <strong>Legend</strong>
-              <div>🟢 High Production</div>
-              <div>🔵 Normal</div>
-              <div>🟠 Inspection Required</div>
-              <div>🟣 Top Performer</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(350px,1fr))', gap: '20px' }}>
+              <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                <h3>Top Performing Cooperatives</h3>
+                <ul style={{ marginTop: '15px' }}>
+                  <li>🥇 Usenge Fish Processors Cooperative</li>
+                  <li>🥈 Uhanya Women Fish Dryers Cooperative</li>
+                  <li>🥉 Bondo Fisheries Cooperative</li>
+                  <li>🏅 Rarieda Fish Traders Cooperative</li>
+                </ul>
+              </div>
+              <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+                <h3>County Alerts</h3>
+                <ul style={{ marginTop: '15px' }}>
+                  <li style={{ color: '#ea580c' }}>⚠ Wichlum BMU inspection overdue</li>
+                  <li style={{ color: '#16a34a' }}>✓ Luanda Kotieno exceeded target</li>
+                  <li style={{ color: '#2563eb' }}>✓ 91% GPS verification coverage</li>
+                </ul>
+              </div>
             </div>
           </div>
         )}
-      </div>
 
-      {/* Beneficiaries */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))",
-          gap: "15px",
-          marginBottom: "20px",
-        }}
-      >
-        <Card title="Women Beneficiaries" value="1,246" color="#16a34a" />
-        <Card title="Youth Beneficiaries" value="892" color="#2563eb" />
-        <Card title="Quality Compliance" value="94%" color="#9333ea" />
-      </div>
+        {/* GIS Monitoring Page */}
+        {activePage === 'gis' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>GIS Monitoring Map</h2>
+            <div style={{ height: '500px', borderRadius: '12px', overflow: 'hidden', marginTop: '15px' }}>
+              <MapContainer center={[0.35, 34.1]} zoom={8} style={{ height: '100%', width: '100%' }}>
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; OpenStreetMap contributors'
+                />
+                {gisSites.map((site, index) => (
+                  <Marker
+                    key={index}
+                    position={[site.lat, site.lng]}
+                    icon={createMarkerIcon(site.color)}
+                  >
+                    <Popup>
+                      <div>
+                        <strong>{site.name}</strong>
+                        <br />
+                        Status: {site.status}
+                        <br />
+                        <small>Coordinates: {site.lat.toFixed(2)}, {site.lng.toFixed(2)}</small>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+          </div>
+        )}
 
-      {/* Tables */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(350px,1fr))",
-          gap: "20px",
-        }}
-      >
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "18px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h2>Top Performing Cooperatives</h2>
+        {/* Fish Drying Sites Page */}
+        {activePage === 'sites' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>🐟 Fish Drying Sites</h2>
+            <table style={{ width: '100%', marginTop: '15px', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ background: '#f0f0f0', borderBottom: '2px solid #e0e0e0' }}>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Site Name</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Location</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Capacity</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { name: 'Usenge Fish Drying Facility', location: 'Siaya Town', capacity: '50 tons/month', status: 'Operational' },
+                  { name: 'Uhanya Drying Yard', location: 'Kanyoza', capacity: '35 tons/month', status: 'Operational' },
+                  { name: 'Wichlum Processing Center', location: 'Kisumu Road', capacity: '60 tons/month', status: 'Maintenance' },
+                  { name: 'Luanda Kotieno Facility', location: 'Yala', capacity: '45 tons/month', status: 'Operational' },
+                ].map((site, idx) => (
+                  <tr key={idx} style={{ borderBottom: '1px solid #e0e0e0' }}>
+                    <td style={{ padding: '12px' }}><strong>{site.name}</strong></td>
+                    <td style={{ padding: '12px' }}>{site.location}</td>
+                    <td style={{ padding: '12px' }}>{site.capacity}</td>
+                    <td style={{ padding: '12px' }}><span style={{ background: site.status === 'Operational' ? '#c6f6d5' : '#feebc8', padding: '4px 8px', borderRadius: '4px' }}>{site.status}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-          <ul>
-            <li>🥇 Usenge Fish Processors Cooperative</li>
-            <li>🥈 Uhanya Women Fish Dryers Cooperative</li>
-            <li>🥉 Bondo Fisheries Cooperative</li>
-            <li>🏅 Rarieda Fish Traders Cooperative</li>
-          </ul>
-        </div>
+        {/* Cooperatives Page */}
+        {activePage === 'cooperatives' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>👥 Cooperatives Directory</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: '20px', marginTop: '15px' }}>
+              {['Usenge Fish Processors', 'Uhanya Women Fish Dryers', 'Bondo Fisheries', 'Rarieda Fish Traders'].map((coop, idx) => (
+                <div key={idx} style={{ background: '#f8f9fa', padding: '15px', borderRadius: '8px', borderLeft: '4px solid #2563eb' }}>
+                  <h4 style={{ marginTop: '0' }}>{coop} Cooperative</h4>
+                  <p style={{ marginBottom: '8px' }}><strong>Members:</strong> {45 + idx * 10}</p>
+                  <p style={{ marginBottom: '8px' }}><strong>Production:</strong> {200 + idx * 30} tons/month</p>
+                  <p style={{ marginBottom: '0' }}><strong>Status:</strong> <span style={{ color: '#16a34a', fontWeight: 'bold' }}>Active</span></p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "18px",
-            boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h2>County Alerts</h2>
+        {/* BMUs Page */}
+        {activePage === 'bmus' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>⚓ Beach Management Units (BMUs)</h2>
+            <div style={{ marginTop: '15px' }}>
+              {gisSites.map((bmu, idx) => (
+                <div key={idx} style={{ background: '#f8f9fa', padding: '15px', marginBottom: '10px', borderRadius: '8px', borderLeft: `4px solid ${bmu.color}` }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <h4 style={{ marginTop: '0' }}>{bmu.name}</h4>
+                      <p style={{ marginBottom: '0', color: '#666' }}>Coordinates: {bmu.lat.toFixed(2)}°, {bmu.lng.toFixed(2)}°</p>
+                    </div>
+                    <span style={{ background: bmu.color, color: 'white', padding: '8px 12px', borderRadius: '6px' }}>{bmu.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-          <ul>
-            <li style={{ color: "#ea580c" }}>
-              ⚠ Wichlum BMU inspection overdue
-            </li>
-            <li style={{ color: "#16a34a" }}>
-              ✓ Luanda Kotieno exceeded target
-            </li>
-            <li style={{ color: "#2563eb" }}>
-              ✓ 91% GPS verification coverage
-            </li>
-          </ul>
-        </div>
-      </div>
+        {/* Performance Analytics Page */}
+        {activePage === 'analytics' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>📈 Performance Analytics</h2>
+            <div style={{ marginTop: '20px', padding: '30px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: '8px', textAlign: 'center' }}>
+              <p style={{ fontSize: '1.2em', margin: '0' }}>📊 Advanced Analytics Dashboard</p>
+              <p style={{ marginTop: '10px', opacity: 0.9 }}>Performance trends, production metrics, and compliance tracking</p>
+              <p style={{ marginTop: '15px', fontSize: '0.9em' }}>Data visualization features ready for integration</p>
+            </div>
+          </div>
+        )}
+
+        {/* Inspections Page */}
+        {activePage === 'inspections' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>📋 Inspections & Compliance</h2>
+            <div style={{ marginTop: '15px' }}>
+              {[
+                { site: 'Usenge BMU', date: '2026-08-10', inspector: 'John Doe', status: 'Passed' },
+                { site: 'Uhanya BMU', date: '2026-08-08', inspector: 'Jane Smith', status: 'Passed' },
+                { site: 'Wichlum BMU', date: '2026-07-25', inspector: 'Peter Omondi', status: 'Failed - Retesting' },
+                { site: 'Luanda Kotieno', date: '2026-08-12', inspector: 'Mary Kipchoge', status: 'Pending' },
+              ].map((inspection, idx) => (
+                <div key={idx} style={{ background: '#f8f9fa', padding: '15px', marginBottom: '10px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <h4 style={{ marginTop: '0', marginBottom: '5px' }}>{inspection.site}</h4>
+                    <p style={{ marginBottom: '0', color: '#666', fontSize: '0.9em' }}>Inspector: {inspection.inspector} | Date: {inspection.date}</p>
+                  </div>
+                  <span style={{ background: inspection.status.includes('Passed') ? '#c6f6d5' : inspection.status.includes('Failed') ? '#fecaca' : '#feebc8', color: inspection.status.includes('Passed') ? '#166534' : '#7c2d12', padding: '8px 12px', borderRadius: '6px' }}>
+                    {inspection.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Revenue Tracking Page */}
+        {activePage === 'revenue' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>💰 Revenue Tracking</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: '15px', marginTop: '15px' }}>
+              <Card title="Total Monthly Revenue" value="KES 7.9M" color="#059669" />
+              <Card title="This Month (Aug)" value="KES 2.1M" color="#2563eb" />
+              <Card title="Last Month (Jul)" value="KES 1.8M" color="#ea580c" />
+              <Card title="Avg Per Cooperative" value="KES 282K" color="#9333ea" />
+            </div>
+            <div style={{ marginTop: '30px', padding: '20px', background: '#f0fdf4', borderRadius: '8px', borderLeft: '4px solid #059669' }}>
+              <h4 style={{ marginTop: '0' }}>Revenue Distribution</h4>
+              <p style={{ marginBottom: '8px' }}>Usenge BMU: 28% (KES 2.2M)</p>
+              <p style={{ marginBottom: '8px' }}>Uhanya BMU: 22% (KES 1.7M)</p>
+              <p style={{ marginBottom: '8px' }}>Wichlum BMU: 31% (KES 2.4M)</p>
+              <p style={{ marginBottom: '0' }}>Luanda Kotieno: 19% (KES 1.5M)</p>
+            </div>
+          </div>
+        )}
+
+        {/* Reports Page */}
+        {activePage === 'reports' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>📄 Reports & Documents</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: '20px', marginTop: '15px' }}>
+              {[
+                { title: 'Monthly Report', date: 'August 2026', icon: '📋' },
+                { title: 'Production Analysis', date: 'August 2026', icon: '📊' },
+                { title: 'Financial Summary', date: 'August 2026', icon: '💼' },
+                { title: 'Quality Assessment', date: 'August 2026', icon: '✓' },
+                { title: 'Compliance Status', date: 'August 2026', icon: '📋' },
+                { title: 'Annual Report', date: 'July 2026', icon: '📈' },
+              ].map((report, idx) => (
+                <div key={idx} style={{ background: '#f8f9fa', padding: '20px', borderRadius: '8px', cursor: 'pointer', transition: 'all 0.3s', border: '1px solid #e0e0e0' }}>
+                  <p style={{ fontSize: '2em', margin: '0 0 10px 0' }}>{report.icon}</p>
+                  <h4 style={{ marginTop: '0', marginBottom: '5px' }}>{report.title}</h4>
+                  <p style={{ color: '#666', marginBottom: '15px', fontSize: '0.9em' }}>{report.date}</p>
+                  <button style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9em' }}>Download</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Settings Page */}
+        {activePage === 'settings' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>⚙ Settings</h2>
+            <div style={{ marginTop: '20px' }}>
+              <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #e0e0e0' }}>
+                <h3>System Settings</h3>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <input type="checkbox" defaultChecked style={{ width: '18px', height: '18px' }} />
+                  <span>Enable GPS Monitoring</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <input type="checkbox" defaultChecked style={{ width: '18px', height: '18px' }} />
+                  <span>Email Notifications</span>
+                </label>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <input type="checkbox" defaultChecked style={{ width: '18px', height: '18px' }} />
+                  <span>Mobile Alerts</span>
+                </label>
+              </div>
+
+              <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid #e0e0e0' }}>
+                <h3>User Management</h3>
+                <p>Current User: Fisheries Monitoring Officer</p>
+                <p>Email: officer@siaya.gov.ke</p>
+                <button style={{ background: '#2563eb', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Change Password</button>
+              </div>
+
+              <div>
+                <h3>About</h3>
+                <p>Siaya Fisheries Monitoring System v1.0</p>
+                <p>© 2026 Siaya County Government</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }
 
 function Card({ title, value, color }) {
   return (
-    <div
-      style={{
-        background: "white",
-        padding: "20px",
-        borderRadius: "18px",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-      }}
-    >
-      <h3 style={{ color: "#475569" }}>{title}</h3>
-      <div
-        style={{
-          fontSize: "30px",
-          fontWeight: "bold",
-          color,
-          marginTop: "10px",
-        }}
-      >
+    <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+      <h4 style={{ color: '#666', margin: '0 0 10px 0' }}>{title}</h4>
+      <div style={{ fontSize: '28px', fontWeight: 'bold', color, margin: '10px 0 0 0' }}>
         {value}
       </div>
     </div>
