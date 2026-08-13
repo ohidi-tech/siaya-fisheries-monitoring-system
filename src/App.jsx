@@ -34,12 +34,42 @@ export default function App() {
     { id: 'settings', label: '⚙ Settings', icon: '⚙' },
   ];
 
+  const [sortColumn, setSortColumn] = useState('name');
+  const [sortDirection, setSortDirection] = useState('asc');
+
   const gisSites = [
     { name: "Usenge BMU", lat: 0.47, lng: 33.96, status: "High Production", color: "#16a34a" },
     { name: "Uhanya BMU", lat: 0.35, lng: 33.98, status: "Normal", color: "#2563eb" },
     { name: "Wichlum BMU", lat: 0.28, lng: 34.15, status: "Inspection Due", color: "#ea580c" },
     { name: "Luanda Kotieno", lat: 0.15, lng: 34.32, status: "Top Performer", color: "#9333ea" },
   ];
+
+  const bmuData = [
+    { id: 1, name: "Usenge BMU", lat: 0.47, lng: 33.96, members: 156, women: 68, youth: 42, production: 45, lastInspection: "2026-08-10", riskRating: "Low" },
+    { id: 2, name: "Uhanya BMU", lat: 0.35, lng: 33.98, members: 124, women: 58, youth: 31, production: 38, lastInspection: "2026-08-08", riskRating: "Low" },
+    { id: 3, name: "Wichlum BMU", lat: 0.28, lng: 34.15, members: 189, women: 84, youth: 55, production: 52, lastInspection: "2026-07-20", riskRating: "High" },
+    { id: 4, name: "Luanda Kotieno BMU", lat: 0.15, lng: 34.32, members: 142, women: 62, youth: 38, production: 48, lastInspection: "2026-08-12", riskRating: "Low" },
+    { id: 5, name: "Bondo BMU", lat: 0.42, lng: 34.08, members: 167, women: 71, youth: 44, production: 41, lastInspection: "2026-08-05", riskRating: "Medium" },
+    { id: 6, name: "Yala BMU", lat: 0.22, lng: 34.18, members: 198, women: 91, youth: 52, production: 56, lastInspection: "2026-08-11", riskRating: "Low" },
+  ];
+
+  const handleSort = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedBmuData = [...bmuData].sort((a, b) => {
+    let aVal = a[sortColumn];
+    let bVal = b[sortColumn];
+    if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+    if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+    if (sortDirection === 'asc') return aVal > bVal ? 1 : -1;
+    return aVal < bVal ? 1 : -1;
+  });
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8fafc', fontFamily: 'Arial, sans-serif' }}>
@@ -239,19 +269,41 @@ export default function App() {
         {activePage === 'bmus' && (
           <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
             <h2>⚓ Beach Management Units (BMUs)</h2>
-            <div style={{ marginTop: '15px' }}>
-              {gisSites.map((bmu, idx) => (
-                <div key={idx} style={{ background: '#f8f9fa', padding: '15px', marginBottom: '10px', borderRadius: '8px', borderLeft: `4px solid ${bmu.color}` }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div>
-                      <h4 style={{ marginTop: '0' }}>{bmu.name}</h4>
-                      <p style={{ marginBottom: '0', color: '#666' }}>Coordinates: {bmu.lat.toFixed(2)}°, {bmu.lng.toFixed(2)}°</p>
-                    </div>
-                    <span style={{ background: bmu.color, color: 'white', padding: '8px 12px', borderRadius: '6px' }}>{bmu.status}</span>
-                  </div>
-                </div>
-              ))}
+            <div style={{ marginTop: '20px', overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+                <thead>
+                  <tr style={{ background: '#f0f0f0', borderBottom: '2px solid #e0e0e0' }}>
+                    <th style={{ padding: '12px', textAlign: 'left', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('name')}>BMU Name {sortColumn === 'name' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('lat')}>GPS Coordinates</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('members')}>Members {sortColumn === 'members' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('women')}>Women {sortColumn === 'women' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('youth')}>Youth {sortColumn === 'youth' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('production')}>Current Production {sortColumn === 'production' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('lastInspection')}>Last Inspection {sortColumn === 'lastInspection' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                    <th style={{ padding: '12px', textAlign: 'center', cursor: 'pointer', fontWeight: '600', userSelect: 'none' }} onClick={() => handleSort('riskRating')}>Risk Rating {sortColumn === 'riskRating' && (sortDirection === 'asc' ? '↑' : '↓')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedBmuData.map((bmu, idx) => {
+                    const riskColors = { 'Low': '#c6f6d5', 'Medium': '#feebc8', 'High': '#fecaca' };
+                    const riskTextColors = { 'Low': '#166534', 'Medium': '#7c2d12', 'High': '#7f1d1d' };
+                    return (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e0e0e0', transition: 'background 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.background = '#f9f9f9'} onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}>
+                        <td style={{ padding: '12px', fontWeight: '500' }}>{bmu.name}</td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontSize: '0.9em', color: '#666' }}>{bmu.lat.toFixed(2)}°, {bmu.lng.toFixed(2)}°</td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontWeight: '500' }}>{bmu.members}</td>
+                        <td style={{ padding: '12px', textAlign: 'center', color: '#16a34a', fontWeight: '600' }}>{bmu.women}</td>
+                        <td style={{ padding: '12px', textAlign: 'center', color: '#2563eb', fontWeight: '600' }}>{bmu.youth}</td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontWeight: '500' }}>{bmu.production} tons/mo</td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontSize: '0.9em' }}>{bmu.lastInspection}</td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}><span style={{ background: riskColors[bmu.riskRating], color: riskTextColors[bmu.riskRating], padding: '6px 12px', borderRadius: '6px', fontWeight: '600', fontSize: '0.85em' }}>{bmu.riskRating}</span></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
+            <p style={{ marginTop: '15px', color: '#666', fontSize: '0.9em' }}>💡 Click on column headers to sort. Total BMUs: {bmuData.length} | Total Members: {bmuData.reduce((sum, b) => sum + b.members, 0)} | Total Production: {bmuData.reduce((sum, b) => sum + b.production, 0)} tons/month</p>
           </div>
         )}
 
