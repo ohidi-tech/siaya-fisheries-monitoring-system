@@ -1,9 +1,30 @@
+import { useState } from 'react';
+import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+
+// Custom marker icons
+const createMarkerIcon = (color) => {
+  return L.icon({
+    iconUrl: `data:image/svg+xml;base64,${btoa(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+        <circle cx="16" cy="16" r="12" fill="${color}" stroke="white" stroke-width="2"/>
+      </svg>
+    `)}`,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+  });
+};
+
 export default function App() {
+  const [mapView, setMapView] = useState('mockup');
+
   const gisSites = [
-    { name: "Usenge BMU", x: "20%", y: "35%", status: "High Production" },
-    { name: "Uhanya BMU", x: "38%", y: "52%", status: "Normal" },
-    { name: "Wichlum BMU", x: "55%", y: "42%", status: "Inspection Due" },
-    { name: "Luanda Kotieno", x: "72%", y: "60%", status: "Top Performer" },
+    { name: "Usenge BMU", lat: 0.47, lng: 33.96, status: "High Production", color: "#16a34a" },
+    { name: "Uhanya BMU", lat: 0.35, lng: 33.98, status: "Normal", color: "#2563eb" },
+    { name: "Wichlum BMU", lat: 0.28, lng: 34.15, status: "Inspection Due", color: "#ea580c" },
+    { name: "Luanda Kotieno", lat: 0.15, lng: 34.32, status: "Top Performer", color: "#9333ea" },
   ];
 
   return (
@@ -72,85 +93,150 @@ export default function App() {
           boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
         }}
       >
-        <h2>GIS Monitoring Map (Mockup)</h2>
-
-        <div
-          style={{
-            height: "420px",
-            position: "relative",
-            borderRadius: "16px",
-            background:
-              "linear-gradient(to bottom right,#bfdbfe,#dcfce7,#a5f3fc)",
-            overflow: "hidden",
-            marginTop: "10px",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              left: "5%",
-              top: "10%",
-              background: "#bbf7d0",
-              padding: "10px",
-              borderRadius: "8px",
-            }}
-          >
-            Lake Victoria Shoreline
-          </div>
-
-          {gisSites.map((site, index) => (
-            <div
-              key={index}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h2>GIS Monitoring Map</h2>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => setMapView('interactive')}
               style={{
-                position: "absolute",
-                left: site.x,
-                top: site.y,
-                transform: "translate(-50%, -50%)",
+                padding: '8px 16px',
+                background: mapView === 'interactive' ? '#2563eb' : '#e2e8f0',
+                color: mapView === 'interactive' ? 'white' : '#0f172a',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500',
               }}
             >
-              <div
-                style={{
-                  width: "18px",
-                  height: "18px",
-                  background: "red",
-                  borderRadius: "50%",
-                  border: "3px solid white",
-                }}
-              />
-
-              <div
-                style={{
-                  background: "white",
-                  padding: "8px",
-                  borderRadius: "8px",
-                  marginTop: "5px",
-                  fontSize: "12px",
-                  minWidth: "120px",
-                }}
-              >
-                <strong>{site.name}</strong>
-                <br />
-                {site.status}
-              </div>
-            </div>
-          ))}
-
-          <div
-            style={{
-              position: "absolute",
-              bottom: "10px",
-              left: "10px",
-              background: "white",
-              padding: "10px",
-              borderRadius: "8px",
-            }}
-          >
-            <strong>Legend</strong>
-            <div>🔴 BMU Monitoring Site</div>
-            <div>🟢 High Production Zone</div>
-            <div>🟡 Inspection Required</div>
+              Interactive Map
+            </button>
+            <button
+              onClick={() => setMapView('mockup')}
+              style={{
+                padding: '8px 16px',
+                background: mapView === 'mockup' ? '#2563eb' : '#e2e8f0',
+                color: mapView === 'mockup' ? 'white' : '#0f172a',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontWeight: '500',
+              }}
+            >
+              Mockup View
+            </button>
           </div>
         </div>
+
+        {mapView === 'interactive' ? (
+          <div style={{ height: '420px', borderRadius: '16px', overflow: 'hidden', marginTop: '10px' }}>
+            <MapContainer center={[0.35, 34.1]} zoom={8} style={{ height: '100%', width: '100%' }}>
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; OpenStreetMap contributors'
+              />
+              {gisSites.map((site, index) => (
+                <Marker
+                  key={index}
+                  position={[site.lat, site.lng]}
+                  icon={createMarkerIcon(site.color)}
+                >
+                  <Popup>
+                    <div>
+                      <strong>{site.name}</strong>
+                      <br />
+                      Status: {site.status}
+                      <br />
+                      <small>Coordinates: {site.lat.toFixed(2)}, {site.lng.toFixed(2)}</small>
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+            </MapContainer>
+          </div>
+        ) : (
+          <div
+            style={{
+              height: "420px",
+              position: "relative",
+              borderRadius: "16px",
+              background:
+                "linear-gradient(to bottom right,#bfdbfe,#dcfce7,#a5f3fc)",
+              overflow: "hidden",
+              marginTop: "10px",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                left: "5%",
+                top: "10%",
+                background: "#bbf7d0",
+                padding: "10px",
+                borderRadius: "8px",
+              }}
+            >
+              Lake Victoria Shoreline
+            </div>
+
+            {gisSites.map((site, index) => {
+              const xPositions = ["20%", "38%", "55%", "72%"];
+              const yPositions = ["35%", "52%", "42%", "60%"];
+              return (
+                <div
+                  key={index}
+                  style={{
+                    position: "absolute",
+                    left: xPositions[index],
+                    top: yPositions[index],
+                    transform: "translate(-50%, -50%)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "18px",
+                      height: "18px",
+                      background: site.color,
+                      borderRadius: "50%",
+                      border: "3px solid white",
+                    }}
+                  />
+
+                  <div
+                    style={{
+                      background: "white",
+                      padding: "8px",
+                      borderRadius: "8px",
+                      marginTop: "5px",
+                      fontSize: "12px",
+                      minWidth: "120px",
+                    }}
+                  >
+                    <strong>{site.name}</strong>
+                    <br />
+                    {site.status}
+                  </div>
+                </div>
+              );
+            })}
+
+            <div
+              style={{
+                position: "absolute",
+                bottom: "10px",
+                left: "10px",
+                background: "white",
+                padding: "10px",
+                borderRadius: "8px",
+              }}
+            >
+              <strong>Legend</strong>
+              <div>🟢 High Production</div>
+              <div>🔵 Normal</div>
+              <div>🟠 Inspection Required</div>
+              <div>🟣 Top Performer</div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Beneficiaries */}
