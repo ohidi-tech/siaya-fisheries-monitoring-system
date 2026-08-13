@@ -215,6 +215,21 @@ app.get('/api/bmus', async (req, res) => {
   }
 });
 
+// Get all data (BMUs) - Generic data endpoint
+app.get('/api/data', async (req, res) => {
+  try {
+    const bmus = await BMU.find().sort({ name: 1 });
+    res.json({
+      success: true,
+      data: bmus,
+      count: bmus.length,
+      timestamp: new Date(),
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Get all inspections
 app.get('/api/inspections', async (req, res) => {
   try {
@@ -283,8 +298,9 @@ app.listen(PORT, () => {
   console.log(`📊 Running on http://localhost:${PORT}`);
   console.log(`\nAPI Endpoints:`);
   console.log(`  GET  /api/health - Server health check`);
-  console.log(`  POST /api/sync - Sync data from ODK/KoboToolbox`);
+  console.log(`  GET  /api/data - Get all data (BMUs)`);
   console.log(`  GET  /api/bmus - Get all BMUs`);
+  console.log(`  POST /api/sync - Sync data from ODK/KoboToolbox`);
   console.log(`  GET  /api/inspections - Get all inspections`);
   console.log(`  GET  /api/cooperatives - Get all cooperatives`);
   console.log(`  GET  /api/sync-logs - Get sync logs`);
