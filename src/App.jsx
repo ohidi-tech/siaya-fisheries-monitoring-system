@@ -20,6 +20,9 @@ const createMarkerIcon = (color) => {
 export default function App() {
   const [activePage, setActivePage] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [syncStatus, setSyncStatus] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncLogs, setSyncLogs] = useState([]);
 
   const menuItems = [
     { id: 'dashboard', label: '🏠 Executive Dashboard', icon: '🏠' },
@@ -31,6 +34,7 @@ export default function App() {
     { id: 'inspections', label: '📋 Inspections', icon: '📋' },
     { id: 'revenue', label: '💰 Revenue Tracking', icon: '💰' },
     { id: 'reports', label: '📄 Reports', icon: '📄' },
+    { id: 'datasync', label: '🔄 Data Sync (ODK)', icon: '🔄' },
     { id: 'settings', label: '⚙ Settings', icon: '⚙' },
   ];
 
@@ -52,6 +56,45 @@ export default function App() {
     { id: 5, name: "Bondo BMU", lat: 0.42, lng: 34.08, members: 167, women: 71, youth: 44, production: 41, lastInspection: "2026-08-05", riskRating: "Medium" },
     { id: 6, name: "Yala BMU", lat: 0.22, lng: 34.18, members: 198, women: 91, youth: 52, production: 56, lastInspection: "2026-08-11", riskRating: "Low" },
   ];
+
+  // ODK Sync Functions
+  const testOdkConnection = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/test-odk-connection', { method: 'POST' });
+      const data = await response.json();
+      alert(data.success ? '✓ ODK Connection Successful!' : '✗ Connection Failed: ' + data.error);
+      return data.success;
+    } catch (error) {
+      alert('✗ Error: Cannot reach backend server. Make sure server is running on http://localhost:5000');
+      return false;
+    }
+  };
+
+  const syncOdkData = async () => {
+    setIsSyncing(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/sync', { method: 'POST' });
+      const data = await response.json();
+      setSyncStatus(data);
+      await fetchSyncLogs();
+      alert(`✓ Sync Completed!\nRecords Imported: ${data.recordsImported}`);
+    } catch (error) {
+      setSyncStatus({ success: false, error: error.message });
+      alert('✗ Sync Failed: ' + error.message);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const fetchSyncLogs = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/sync-logs');
+      const data = await response.json();
+      setSyncLogs(data);
+    } catch (error) {
+      console.error('Error fetching sync logs:', error);
+    }
+  };
 
   const handleSort = (column) => {
     if (sortColumn === column) {
@@ -384,6 +427,105 @@ export default function App() {
                   <button style={{ background: '#2563eb', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9em' }}>Download</button>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Data Sync Page */}
+        {activePage === 'datasync' && (
+          <div style={{ background: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.1)' }}>
+            <h2>🔄 Data Synchronization (ODK/KoboToolbox)</h2>
+            
+            <div style={{ marginTop: '20px', padding: '20px', background: '#f0f9ff', borderRadius: '8px', borderLeft: '4px solid #2563eb', marginBottom: '20px' }}>
+              <h3 style={{ marginTop: '0' }}>Data Pipeline</h3>
+              <div style={{ fontSize: '0.9em', color: '#333' }}>
+                <p style={{ margin: '8px 0' }}>📱 <strong>Enumerators</strong> collect data in the field</p>
+                <p style={{ margin: '8px 0' }}>↓</p>
+                <p style={{ margin: '8px 0' }}>🔗 <strong>ODK/KoboToolbox</strong> platform stores submissions</p>
+                <p style={{ margin: '8px 0' }}>↓</p>
+                <p style={{ margin: '8px 0' }}>💾 <strong>MongoDB Database</strong> stores synced data</p>
+                <p style={{ margin: '8px 0' }}>↓</p>
+                <p style={{ margin: '8px 0' }}>📊 <strong>Dashboard</strong> displays analytics & reports</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: '15px', marginBottom: '20px' }}>
+              <button
+                onClick={testOdkConnection}
+                style={{ background: '#2563eb', color: 'white', border: 'none', padding: '15px', borderRadius: '8px', cursor: 'pointer', fontSize: '1em', fontWeight: '600', transition: 'all 0.3s' }}
+              >
+                🔗 Test ODK Connection
+              </button>
+              <button
+                onClick={syncOdkData}
+                disabled={isSyncing}
+                style={{ background: isSyncing ? '#ccc' : '#16a34a', color: 'white', border: 'none', padding: '15px', borderRadius: '8px', cursor: isSyncing ? 'not-allowed' : 'pointer', fontSize: '1em', fontWeight: '600', transition: 'all 0.3s' }}
+              >
+                {isSyncing ? '⏳ Syncing...' : '🔄 Start Full Sync'}
+              </button>
+              <button
+                onClick={fetchSyncLogs}
+                style={{ background: '#ea580c', color: 'white', border: 'none', padding: '15px', borderRadius: '8px', cursor: 'pointer', fontSize: '1em', fontWeight: '600', transition: 'all 0.3s' }}
+              >
+                📋 Refresh Logs
+              </button>
+            </div>
+
+            {syncStatus && (
+              <div style={{ background: syncStatus.success ? '#c6f6d5' : '#fecaca', padding: '15px', borderRadius: '8px', marginBottom: '20px', borderLeft: `4px solid ${syncStatus.success ? '#16a34a' : '#dc2626'}` }}>
+                <p style={{ margin: '0 0 8px 0', fontWeight: '600', color: syncStatus.success ? '#166534' : '#7f1d1d' }}>
+                  {syncStatus.success ? '✓ Sync Successful' : '✗ Sync Failed'}
+                </p>
+                <p style={{ margin: '0 0 8px 0', color: syncStatus.success ? '#166534' : '#7f1d1d' }}>
+                  {syncStatus.message || syncStatus.error}
+                </p>
+                {syncStatus.recordsImported && <p style={{ margin: '0', color: syncStatus.success ? '#166534' : '#7f1d1d' }}>📊 Records Imported: {syncStatus.recordsImported}</p>}
+              </div>
+            )}
+
+            <h3>Recent Sync Logs</h3>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+                <thead>
+                  <tr style={{ background: '#f0f0f0', borderBottom: '2px solid #e0e0e0' }}>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Timestamp</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>Status</th>
+                    <th style={{ padding: '12px', textAlign: 'center' }}>Records Imported</th>
+                    <th style={{ padding: '12px', textAlign: 'left' }}>Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {syncLogs.length > 0 ? (
+                    syncLogs.map((log, idx) => (
+                      <tr key={idx} style={{ borderBottom: '1px solid #e0e0e0' }}>
+                        <td style={{ padding: '12px', fontSize: '0.9em' }}>{new Date(log.timestamp).toLocaleString()}</td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <span style={{ background: log.status === 'completed' ? '#c6f6d5' : log.status === 'failed' ? '#fecaca' : '#feebc8', color: log.status === 'completed' ? '#166534' : log.status === 'failed' ? '#7f1d1d' : '#7c2d12', padding: '6px 12px', borderRadius: '6px', fontWeight: '600' }}>
+                            {log.status}
+                          </span>
+                        </td>
+                        <td style={{ padding: '12px', textAlign: 'center', fontWeight: '600' }}>{log.recordsImported || 0}</td>
+                        <td style={{ padding: '12px' }}>{log.details}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: '#999' }}>No sync logs yet. Click "Start Full Sync" to begin.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ marginTop: '30px', padding: '15px', background: '#f0f9ff', borderRadius: '8px', borderLeft: '4px solid #2563eb' }}>
+              <h3 style={{ marginTop: '0' }}>Setup Instructions</h3>
+              <ol style={{ marginBottom: '0' }}>
+                <li><strong>Create .env file:</strong> Copy .env.example to .env</li>
+                <li><strong>Add credentials:</strong> Enter your ODK/KoboToolbox username and password</li>
+                <li><strong>Start server:</strong> Run <code style={{ background: '#e0e0e0', padding: '2px 6px', borderRadius: '3px' }}>npm run server</code></li>
+                <li><strong>Test connection:</strong> Click "Test ODK Connection"</li>
+                <li><strong>Sync data:</strong> Click "Start Full Sync" to import all form submissions</li>
+              </ol>
             </div>
           </div>
         )}
