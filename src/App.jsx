@@ -114,9 +114,10 @@ export default function App() {
         overflowY: 'auto',
       }}>
         {/* Header */}
-        <div style={{ marginBottom: '30px' }}>
-          <h1 style={{ color: '#0f172a', marginBottom: '5px' }}>Siaya Fisheries Monitoring System</h1>
-          <p style={{ color: '#64748b', marginBottom: '0' }}>County Fisheries Monitoring Dashboard • Siaya County Government</p>
+        <div style={{ marginBottom: '30px', paddingBottom: '20px', borderBottom: '2px solid #e2e8f0' }}>
+          <p style={{ color: '#64748b', marginBottom: '2px', fontSize: '0.95em', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Siaya County Government</p>
+          <p style={{ color: '#0f172a', marginBottom: '8px', fontSize: '0.9em', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Department of Fisheries</p>
+          <h1 style={{ color: '#0f172a', marginBottom: '0', fontSize: '1.8em', fontWeight: '700' }}>Fish Drying Cooperative Monitoring System</h1>
         </div>
 
         {/* Dashboard Page */}
